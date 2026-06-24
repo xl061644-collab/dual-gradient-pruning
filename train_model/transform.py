@@ -1,0 +1,72 @@
+import policy
+policies = policy.policies
+import torch
+import numpy as np
+import torchvision
+import torchvision.transforms as transforms
+
+
+
+
+
+def split(aug_list):
+    if '+' not in aug_list:
+        return [int(idx) for idx in aug_list.split('-')]
+    else:
+        ret_list = list()
+        for aug in aug_list.split('+'):
+            ret_list.append([int(idx) for idx in aug.split('-')])
+        return ret_list
+
+def build_transform(normalize=True):
+    policy_list=split("3-1-7+43-18-18")
+    data_mean, data_std = (0.5070751592371323, 0.48654887331495095, 0.4409178433670343), (0.2673342858792401, 0.2564384629170883, 0.27615047132568404)
+    transform_list = [transforms.RandomCrop(32, padding=4),
+                      transforms.RandomHorizontalFlip()]
+    transform_list.append(construct_policy(policy_list))
+    transform_list.extend([
+        transforms.ToTensor(),
+        transforms.Normalize(data_mean, data_std)
+    ])
+
+    transform = transforms.Compose(transform_list)
+    return transform
+
+
+def build_transform1(normalize=True):
+    policy_list=split("3-1-7+43-18-18")
+    data_mean, data_std = (0.4940607, 0.4850613, 0.45037037), (0.20085774, 0.19870903, 0.20153421)
+    transform_list = [transforms.RandomCrop(32, padding=4),
+                      transforms.RandomHorizontalFlip()]
+    transform_list.append(construct_policy(policy_list))
+    transform_list.extend([
+        transforms.ToTensor(),
+        transforms.Normalize(data_mean, data_std) if normalize else transforms.Lambda(lambda x: x),
+    ])
+
+    transform = transforms.Compose(transform_list)
+    return transform
+
+
+class sub_transform:
+    def __init__(self, policy_list):
+        self.policy_list = policy_list
+
+
+    def __call__(self, img):
+        idx = np.random.randint(0, len(self.policy_list))
+        select_policy = self.policy_list[idx]
+        for policy_id in select_policy:
+            img = policies[policy_id](img)
+        return img
+
+
+def construct_policy(policy_list):
+    if isinstance(policy_list[0], list):
+        return sub_transform(policy_list)
+    elif isinstance(policy_list[0], int):
+        return sub_transform([policy_list])
+    else:
+        raise NotImplementedError
+
+
