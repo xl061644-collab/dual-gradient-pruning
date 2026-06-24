@@ -143,7 +143,7 @@ def top_k(input_gradient,k=80):
     return input_gradient
 
 
-def sparse(input_gradient,k=75):
+def dgp(input_gradient,k=75):
     # print(type(input_gradient))
     # 先去除5%Top后保留的大参数
     device = input_gradient[0].device

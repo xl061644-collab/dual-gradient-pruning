@@ -14,7 +14,7 @@ setup = dict(device=device, dtype=getattr(torch, cfg.case.impl.dtype))
 import csv
 import pandas as pd
 
-from defense import soteria_imagenet,sparse
+from defense import soteria_imagenet,dgp
 setup
 
 
@@ -62,7 +62,7 @@ print(true_user_data)
 
 user.plot3(true_user_data,name="cifar10_true.png")
 
-shared_data['gradients']=sparse(shared_data['gradients'],75)
+shared_data['gradients']=dgp(shared_data['gradients'],75)
 
 reconstructed_user_data, stats = attacker.reconstruct([server_payload], [shared_data], server.secrets,
                                                       dryrun=cfg.dryrun)
